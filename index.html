@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12302a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Caixa do Pellegrini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap">
+<style>
+:root{
+  --bg:#edf0ec; --surface:#ffffff; --ink:#18211d; --muted:#56635c; --line:#d2d9d3;
+  --accent:#0e7a55; --accent-ink:#ffffff; --soft:#e0f0e7; --panel:#12302a; --panel-ink:#f2c14e;
+  --good:#157a4a; --bad:#b83a2b;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --mono:"Share Tech Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111714; --surface:#1a221e; --ink:#e7eeea; --muted:#98a69e; --line:#2d3832;
+  --accent:#4fd3a0; --accent-ink:#0e1a15; --soft:#1c3229; --panel:#0a1411; --panel-ink:#f2c14e;
+  --good:#5fcf94; --bad:#f28b7c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111714; --surface:#1a221e; --ink:#e7eeea; --muted:#98a69e; --line:#2d3832;
+  --accent:#4fd3a0; --accent-ink:#0e1a15; --soft:#1c3229; --panel:#0a1411; --panel-ink:#f2c14e;
+  --good:#5fcf94; --bad:#f28b7c; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance}
+h1{font-size:2rem;letter-spacing:.01em;text-transform:uppercase}
+h2{font-size:1.3rem;margin-bottom:8px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mes{display:flex;align-items:center;gap:6px}
+.mes span{font-family:var(--display);font-weight:600;font-size:1.15rem;min-width:125px;text-align:center}
+button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 14px;cursor:pointer;min-height:42px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.prim{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button:disabled{opacity:.55;cursor:default}
+.painel{background:var(--panel);color:#f0f4f1;border-radius:10px;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.painel small{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#a8b8af}
+.painel b{display:block;font-family:var(--mono);font-weight:400;font-size:1.35rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.painel .grande{grid-column:1/-1;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid #34504a;padding-bottom:12px}
+.painel .grande b{font-size:2.3rem;line-height:1.1}
+.painel .falta{text-align:right}
+.painel .falta b{font-size:1.35rem;color:var(--panel-ink)}
+.pos{color:#7fe0ab}.neg{color:#ff9d8f}
+.ind{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ind div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+.ind small{display:block;color:var(--muted);font-size:.74rem;line-height:1.2}
+.ind b{font-family:var(--mono);font-weight:400;font-size:1.1rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ind em{display:block;font-style:normal;color:var(--muted);font-size:.74rem}
+.cmd{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px}
+.cmd .row{flex-direction:column}
+textarea{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--accent);border-radius:8px;padding:11px;resize:vertical;min-height:64px;width:100%;font-size:1.05rem}
+#enviar{min-height:54px;font-size:1.1rem}
+.dica{color:var(--muted);font-size:.88rem;margin:0}
+.resp{background:var(--soft);border-radius:8px;padding:12px 14px;white-space:pre-wrap}
+.resp .acoes{margin-top:8px}
+.falar{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:76px;background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:700;font-size:1.5rem;letter-spacing:.02em}
+.falar svg{width:28px;height:28px;fill:currentColor}
+.falar.ouvindo{background:var(--bad);border-color:var(--bad)}
+.caixa{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.caixa.alerta{border-color:var(--bad);border-width:2px}
+.caixa p{margin:0}
+.caixa h2{margin:0}
+.caixa .topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.trilho{height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.trilho i{display:block;height:100%;background:var(--accent)}
+.alerta .trilho i{background:var(--bad)}
+.alerta #lEstado{color:var(--bad);font-weight:600}
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.campos .tudo{grid-column:1/-1}
+.conta{border-bottom:1px solid var(--line);padding:9px 0;display:flex;flex-direction:column;gap:8px}
+.conta:last-child{border-bottom:0}
+.conta .lin{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.conta .lin>div{min-width:0}
+.conta b{display:block;font-weight:600;overflow-wrap:anywhere}
+.conta small{display:block;color:var(--muted);font-size:.82rem}
+.conta small.atraso{color:var(--bad);font-weight:600}
+.conta.paga b{color:var(--muted)}
+.conta .btns{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.conta .btns .num{white-space:nowrap}
+.mini{min-height:36px;padding:4px 10px;font-size:.88rem}
+.cats{display:flex;flex-direction:column;gap:8px}
+.cat{display:grid;grid-template-columns:minmax(0,7.5rem) 1fr auto;gap:10px;align-items:center}
+.cat>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:10px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tabela{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.r{text-align:right;white-space:nowrap}
+.g{color:var(--good)}.b{color:var(--bad)}
+.vazio{padding:20px;color:var(--muted);text-align:center}
+tr.dia{cursor:pointer}
+.seta{color:var(--muted)}
+tr.det td{background:var(--bg);padding:6px 10px}
+.lista{list-style:none;margin:0;padding:0}
+.lista li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.lista li:last-child{border-bottom:0}
+.lista li>div{min-width:0}
+.lista b{display:block;font-weight:600;overflow-wrap:anywhere}
+.lista small{display:block;color:var(--muted);font-size:.8rem}
+.lista .num{white-space:nowrap}
+.ed{min-height:32px;padding:0 12px 0 0;border:0;background:none;color:var(--accent);font-size:.82rem;text-decoration:underline}
+.ed.perigo{color:var(--bad)}
+.extrato{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 14px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+summary{cursor:pointer;font-weight:600}
+details.catd{padding:8px 10px}
+details.catd summary{font-weight:400;list-style:none}
+details.catd summary::-webkit-details-marker{display:none}
+details.catd .lista{margin-top:6px;border-top:1px solid var(--line)}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted)}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px;min-width:0;width:100%}
+label.marca{flex-direction:row;align-items:center;gap:8px;font-size:.95rem;color:var(--ink)}
+label.marca input{width:auto}
+.backup{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.backup label{display:inline-flex;justify-content:center;font-size:1rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 14px;cursor:pointer}
+.backup input{display:none}
+tr.dia td:first-child{white-space:nowrap}
+@media (max-width:520px){.ind{grid-template-columns:1fr 1fr}.painel .grande b{font-size:2rem}.painel .falta{text-align:left}.painel .falta b{font-size:1.35rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Caixa do Pellegrini</h1>
+    <div class="mes"><button id="ant" aria-label="Mês anterior">‹</button><span id="mesNome"></span><button id="prox" aria-label="Próximo mês">›</button></div>
+  </div>
+
+  <section class="painel" aria-label="Resumo do mês">
+    <div class="grande">
+      <div><small>Sobrou no mês</small><b id="tSobra">R$ 0,00</b></div>
+      <div class="falta"><small>Falta pagar</small><b id="tFalta">R$ 0,00</b></div>
+    </div>
+    <div><small>Entrou</small><b id="tEntrou" class="pos">R$ 0,00</b></div>
+    <div><small>Saiu</small><b id="tSaiu" class="neg">R$ 0,00</b></div>
+  </section>
+
+  <section class="cmd">
+    <h2>Fala comigo</h2>
+    <button id="falar" class="falar" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12h-2z"/></svg><span id="falarTxt">Falar</span></button>
+    <div class="row">
+      <textarea id="cmd" rows="2" placeholder="O que você falar aparece aqui. Também dá pra digitar."></textarea>
+      <button id="enviar" class="prim">Enviar</button>
+    </div>
+    <p class="dica">Exemplos: gastei 50 no mercado no pix · recebi 1500 de salário · comprei um tênis de 300 em 3 vezes · aluguel 800 vence todo dia 5 · paguei o aluguel · meu limite é 2000 · quanto gastei com apostas? · quanto sobrou? · detalhe de ontem · o que vence?</p>
+    <div id="resp" class="resp" hidden></div>
+  </section>
+
+  <section class="caixa" aria-label="Contas a pagar">
+    <div class="topo"><h2>Contas a pagar</h2><span class="dica" id="cResumo"></span></div>
+    <div id="contas"></div>
+    <details>
+      <summary>Adicionar conta</summary>
+      <div class="campos" style="margin-top:10px">
+        <input id="cNome" class="tudo" placeholder="Nome (ex.: Aluguel)" aria-label="Nome da conta">
+        <input id="cValor" inputmode="decimal" placeholder="Valor (R$)" aria-label="Valor da conta">
+        <input id="cDia" inputmode="numeric" placeholder="Dia do vencimento" aria-label="Dia do vencimento">
+        <label class="marca tudo"><input id="cFixa" type="checkbox" checked>Repete todo mês</label>
+        <button id="cBtn" class="prim tudo" type="button">Salvar conta</button>
+      </div>
+    </details>
+  </section>
+
+  <section id="limite" class="caixa" aria-label="Limite do mês">
+    <div class="topo"><h2>Limite do mês</h2><span class="num" id="lValor"></span></div>
+    <div class="trilho"><i id="lBarra"></i></div>
+    <p class="dica" id="lEstado"></p>
+    <div class="row">
+      <input id="lInput" inputmode="decimal" placeholder="Quanto quer gastar no mês" aria-label="Limite de gastos do mês" style="flex:1">
+      <button id="lBtn" type="button">Salvar</button>
+    </div>
+  </section>
+
+  <section class="ind" aria-label="Indicadores">
+    <div><small>Sobra prevista</small><b id="iPrev">—</b></div>
+    <div><small>Gasto por dia</small><b id="iDia">—</b></div>
+    <div><small>No crédito</small><b id="iCred">—</b></div>
+    <div><small>Maior gasto</small><b id="iMaior">—</b><em id="iMaiorCat"></em></div>
+  </section>
+
+  <section>
+    <h2>Dia a dia</h2>
+    <p class="dica" style="margin-bottom:8px">Toque num dia pra ver tudo que foi lançado nele.</p>
+    <div class="tabela"><table>
+      <thead><tr><th>Dia</th><th class="r">Entrou</th><th class="r">Saiu</th><th class="r">Saldo</th></tr></thead>
+      <tbody id="dias"></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Gastos por tipo</h2>
+    <p class="dica" style="margin-bottom:8px">Toque num tipo pra ver cada gasto.</p>
+    <div id="cats" class="cats"></div>
+  </section>
+
+  <section>
+    <h2>Extrato do mês</h2>
+    <div class="extrato"><ul class="lista" id="extrato"></ul></div>
+  </section>
+
+  <details id="manual">
+    <summary id="manualTit">Lançar na mão</summary>
+    <form id="form">
+      <label>O que é<select id="fTipo"><option value="saida">Saída</option><option value="entrada">Entrada</option></select></label>
+      <label>Data<input id="fData" type="date" required></label>
+      <label>Valor (R$)<input id="fValor" inputmode="decimal" placeholder="0,00" required></label>
+      <label>Tipo<select id="fCat"></select></label>
+      <label>Pagamento<select id="fForma"><option value="">Não informado</option><option>Pix</option><option>Débito</option><option>Crédito</option><option>Dinheiro</option><option>Boleto</option><option>Outro</option></select></label>
+      <label id="lParc">Parcelas<input id="fParc" inputmode="numeric" placeholder="1"></label>
+      <label>Descrição<input id="fDesc" placeholder="Opcional"></label>
+      <button class="prim" type="submit" id="fSalvar">Salvar</button>
+      <button type="button" id="fCancelar" hidden>Cancelar</button>
+    </form>
+  </details>
+  <details>
+    <summary>Backup dos dados</summary>
+    <p class="dica" style="margin-top:8px">Os dados ficam só neste celular. Salve uma cópia de vez em quando pra não perder se trocar de aparelho.</p>
+    <div class="backup">
+      <button id="bkSalvar" type="button">Salvar backup</button>
+      <label>Restaurar backup<input id="bkArquivo" type="file" accept="application/json,.json"></label>
+    </div>
+  </details>
+</div>
+<script src="parser.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
