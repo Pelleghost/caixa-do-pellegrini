@@ -11,7 +11,7 @@
     [/almoc|lanche|lanchei|janta|jantei|comida|marmita|restaurante|pizza|hamburguer|\bacai\b|\bi ?food\b|\bcafe\b|sorvete/,"Alimentação"],
     [/gasolina|abasteci|combustivel|\bposto\b|onibus|passagem|pedagio|estacionamento|\buber\b|\b99\b/,"Transporte"],
     [/aluguel|condominio|\bmove(?:l|is)\b|reforma|botijao|\bgas\b|faxina|material de limpeza/,"Casa"],
-    [/\bluz\b|energia|\bagua\b|internet|telefone|celular|\bconta\b|\bcontas\b|boleto|fatura|assinatura|mensalidade|prestacao|\bparcela\b|claude|chatgpt|netflix|spotify|recarga/,"Contas"],
+    [/\bluz\b|energia|\bagua\b|internet|telefone|celular|\bconta\b|\bcontas\b|boleto|fatura|assinatura|mensalidade|prestacao|claude|chatgpt|netflix|spotify|recarga/,"Contas"],
     [/cinema|\bshow\b|viagem|passeio|\bjogo\b|balada|cerveja|\bbar\b/,"Lazer"],
     [/farmacia|remedio|medico|dentista|consulta|\bexames?\b|academia|plano de saude/,"Saúde"],
     [/roupa|tenis|sapato|camisa|calca|presente|shopping/,"Compras"],
@@ -98,7 +98,12 @@
     const itens=[], naoEntendi=[]; let ultimo=null, pagar=null;
     const geral=achar(FORMAS,t);
     const partes=t.split(/\s*[,;]\s+|\.\s+|\s+e\s+|\s+depois\s+|\s+tambem\s+/).map(c=>c.trim()).filter(Boolean);
+    let pend="";
     for(let c of partes){
+      if(pend){ c=pend+" "+c; pend=""; }
+      // "2/2", "3/10" é o número da parcela, não o valor
+      let fracao="";
+      c=c.replace(/\b(\d{1,2})\s*\/\s*(\d{1,2})\b/,(x,a,b)=>{ fracao=a+"/"+b; return " "; });
       let parcelas=0, cadaParcela=0, m;
       if((m=c.match(/\b(?:em\s+|parcelei\s+em\s+)?(\d{1,2})\s*(?:x|vezes|parcelas)\b(?:\s+de\s+(\d+(?:[.,]\d{1,2})?))?(?:\s*(?:reais|real))?/))){
         parcelas=+m[1]; cadaParcela=m[2]?paraNum(m[2]):0; c=c.replace(m[0]," ");
@@ -106,8 +111,11 @@
       const ns=c.match(/\d+(?:[.,]\d{1,2})?/g);
       if(!ns&&!cadaParcela){
         const u=itens[itens.length-1], d=limpar(c,acentos);
-        if(u&&d) u.descricao=u.descricao?u.descricao+" · "+d[0].toLowerCase()+d.slice(1):d;
-        else if(d&&/paguei|\bpago\b/.test(c)) pagar=limpar(c.replace(/\bconta(?:s)? (?:de|do|da)\b|\bconta\b/g," "),acentos);
+        if(u&&d) u.descricao=(u.descricao?u.descricao+" · "+d[0].toLowerCase()+d.slice(1):d)+(fracao?" "+fracao:"");
+        else if(d){
+          if(/paguei|\bpago\b/.test(c)) pagar=limpar(c.replace(/\bconta(?:s)? (?:de|do|da)\b|\bconta\b/g," "),acentos);
+          pend=c+(fracao?" "+fracao:""); // "paguei a parcela do presente, 130": o valor vem no pedaço seguinte
+        }
         continue;
       }
       let v=cadaParcela?cadaParcela*parcelas:0, sem=c;
@@ -122,7 +130,7 @@
       let tipo=forte?"entrada":VERBO_SAIDA.test(c)?"saida":VERBO_ENTRADA.test(c)?"entrada":catS?"saida":catE?"entrada":ultimo;
       if(!tipo){ naoEntendi.push(c); continue; }
       const categoria=tipo==="saida"?(catS||(/comprei/.test(c)?"Compras":"Outros")):(catE||"Outros");
-      let descricao=limpar(sem,acentos);
+      let descricao=limpar(sem,acentos)+(fracao?" "+fracao:"");
       if(semAcento(descricao)===semAcento(categoria)) descricao="";
       const forma=achar(FORMAS,c)||geral||(parcelas>1?"Crédito":"");
       const it={tipo,valor:v,categoria,data,descricao,forma};

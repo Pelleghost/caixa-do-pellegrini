@@ -1,5 +1,5 @@
 // Guarda os arquivos do app pra abrir mesmo sem internet. Busca a versão nova primeiro, quando tem rede.
-const CACHE = "caixa-2";
+const CACHE = "caixa-3";
 const ARQUIVOS = ["./", "index.html", "app.js", "parser.js", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(self.clients.claim()); });
