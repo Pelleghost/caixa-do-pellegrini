@@ -11,7 +11,7 @@
     [/almoc|lanche|lanchei|janta|jantei|comida|marmita|restaurante|pizza|hamburguer|\bacai\b|\bi ?food\b|\bcafe\b|sorvete/,"Alimentação"],
     [/gasolina|abasteci|combustivel|\bposto\b|onibus|passagem|pedagio|estacionamento|\buber\b|\b99\b/,"Transporte"],
     [/aluguel|condominio|\bmove(?:l|is)\b|reforma|botijao|\bgas\b|faxina|material de limpeza/,"Casa"],
-    [/\bluz\b|energia|\bagua\b|internet|telefone|celular|\bconta\b|\bcontas\b|boleto|fatura|assinatura|netflix|spotify|recarga/,"Contas"],
+    [/\bluz\b|energia|\bagua\b|internet|telefone|celular|\bconta\b|\bcontas\b|boleto|fatura|assinatura|mensalidade|prestacao|\bparcela\b|claude|chatgpt|netflix|spotify|recarga/,"Contas"],
     [/cinema|\bshow\b|viagem|passeio|\bjogo\b|balada|cerveja|\bbar\b/,"Lazer"],
     [/farmacia|remedio|medico|dentista|consulta|\bexames?\b|academia|plano de saude/,"Saúde"],
     [/roupa|tenis|sapato|camisa|calca|presente|shopping/,"Compras"],
@@ -54,7 +54,7 @@
   }
   function limpar(s,acentos){
     for(const [re] of FORMAS) s=s.replace(re," ");
-    s=s.replace(/\b(?:reais|real|contos?|pilas?|hoje|ontem|anteontem|agora|parcelado|parcelada)\b/g," ").replace(/\bfoi pag[oa]\b/g," ").replace(/\s+/g," ").trim();
+    s=s.replace(/\b(?:no caso|tipo assim|que e|que eh|que|voce|ne|todo mes|todo mes|por mes)\b/g," ").replace(/\b(?:reais|real|contos?|pilas?|hoje|ontem|anteontem|agora|parcelado|parcelada)\b/g," ").replace(/\bfoi pag[oa]\b/g," ").replace(/\s+/g," ").trim();
     for(let antes=null;antes!==s;){ antes=s; s=s.replace(ENCHIMENTO,"").replace(SOBRA_FIM,"").trim(); }
     s=s.split(" ").map(w=>acentos[w]||w).join(" ");
     return s?s[0].toUpperCase()+s.slice(1):"";
@@ -63,7 +63,7 @@
   window.categoriaDe=nome=>achar(SAIDAS,semAcento(nome))||"Contas";
 
   window.interpretar=function(texto,hoje){
-    const acentos={}; for(const w of String(texto).split(/[^\p{L}\p{N}]+/u)) if(w) acentos[semAcento(w)]=w.toLowerCase();
+    const acentos={}; for(const w of String(texto).split(/[^\p{L}\p{N}]+/u)) if(w) acentos[semAcento(w)]=/^[A-ZÀ-Ú]/.test(w)&&w!==w.toUpperCase()?w:w.toLowerCase();
     let t=" "+semAcento(texto)+" ";
     t=t.replace(/r\$\s*(\d[\d.,]*)/g,"$1 reais ").replace(/r\$\s*/g,"").replace(/(\d)\.(?=\d{3}\b)/g,"$1").replace(/\b(\d{1,3}) (\d{3})\b/g,"$1$2");
     t=numerosPorExtenso(t);
@@ -71,7 +71,7 @@
     const vazio={itens:[],naoEntendi:[]};
 
     // conta a pagar: "aluguel 800 vence todo dia 5", "luz vence dia 10"
-    if(/\bvenc|\btodo dia \d|\btodo mes\b|\bconta fixa\b/.test(t)&&!/\bo que\b|\bquando\b|\bquanto\b|\bqual\b/.test(t)){
+    if((/\bvenc/.test(t)||(/\btodo dia \d|\btodo mes\b|\bconta fixa\b/.test(t)&&!VERBO_SAIDA.test(t)&&!VERBO_ENTRADA.test(t)))&&!/\bo que\b|\bquando\b|\bquanto\b|\bqual\b/.test(t)){
       const d=t.match(/\bdia (\d{1,2})\b/), todoMes=/\btodo (?:dia|mes)\b|\bfixa\b/.test(t);
       let s=t.replace(/\bdia \d{1,2}(?: de [a-z]+)?\b/," ").replace(/\b(?:vence|vencem|vencimento|venceu|todo mes|todo|conta fixa|conta de|conta do|conta da|conta)\b/g," ");
       const ns=(s.match(/\d+(?:[.,]\d{1,2})?/g)||[]).map(paraNum), valor=ns.length?Math.max(...ns):0;
@@ -106,7 +106,7 @@
       const ns=c.match(/\d+(?:[.,]\d{1,2})?/g);
       if(!ns&&!cadaParcela){
         const u=itens[itens.length-1], d=limpar(c,acentos);
-        if(u&&d) u.descricao=u.descricao?u.descricao+" e "+d.toLowerCase():d;
+        if(u&&d) u.descricao=u.descricao?u.descricao+" · "+d[0].toLowerCase()+d.slice(1):d;
         else if(d&&/paguei|\bpago\b/.test(c)) pagar=limpar(c.replace(/\bconta(?:s)? (?:de|do|da)\b|\bconta\b/g," "),acentos);
         continue;
       }

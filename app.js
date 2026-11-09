@@ -69,7 +69,7 @@ function acharConta(texto,m){
 }
 
 function itemDetalhe(l,comDia){
-  const extra=[comDia?ddmm(l.data):"",l.descricao?l.categoria:"",l.forma,l.parcela?`parcela ${l.parcela}`:""].filter(Boolean).join(" · ");
+  const extra=[ddmm(l.data),l.descricao?l.categoria:"",l.forma,l.parcela?`parcela ${l.parcela}`:""].filter(Boolean).join(" · ");
   const ent=l.tipo==="entrada";
   return `<li><div><b>${esc(l.descricao||l.categoria||"Sem descrição")}</b><small>${esc(extra)}</small><button class="ed" data-ed="${esc(l.id)}">editar</button><button class="ed perigo" data-del="${esc(l.id)}">apagar</button></div><span class="num ${ent?"g":"b"}">${ent?"+":"−"} ${semR(Number(l.valor)||0)}</span></li>`;
 }
@@ -79,7 +79,8 @@ function renderContas(){
   $("cResumo").textContent=lista.length?(n?`${n} em aberto`:"Tudo pago"):"";
   $("contas").innerHTML=lista.length?lista.map(({c,venc,pago})=>{
     const p=prazo(venc), aberta=contaAberta===c.id;
-    const sub=pago?`Paga${c.todoMes?" · todo mês":""}`:`${p.txt}${c.todoMes?" · todo mês":""}`;
+    const lp=pago?estado.lanc.find(l=>l.id===c.pagos[mes]):null;
+    const sub=pago?`Paga${lp?" em "+ddmm(lp.data):""} · vencia ${ddmm(venc)}${c.todoMes?" · todo mês":""}`:`${p.txt} (${ddmm(venc)})${c.todoMes?" · todo mês":""}`;
     const botoes=pago?`<button class="mini" data-desfaz="${esc(c.id)}">Desmarcar</button>`:`<button class="mini prim" data-pagar="${esc(c.id)}">Paguei</button>`;
     const forma=aberta?`<div class="campos"><input data-pv inputmode="decimal" aria-label="Valor pago" placeholder="Valor (R$)" value="${c.valor?esc(String(c.valor).replace(".",",")):""}"><select data-pf aria-label="Forma de pagamento"><option value="">Pagamento</option><option>Pix</option><option>Débito</option><option>Crédito</option><option>Dinheiro</option><option>Boleto</option></select><button class="prim tudo" data-confirma="${esc(c.id)}">Confirmar pagamento</button></div>`:"";
     return `<div class="conta${pago?" paga":""}"><div class="lin"><div><b>${esc(c.nome)}</b><small class="${!pago&&p.atraso?"atraso":""}">${esc(sub)}</small><button class="ed perigo" data-delconta="${esc(c.id)}">apagar conta</button></div><div class="btns"><span class="num">${c.valor?semR(Number(c.valor)):"—"}</span>${botoes}</div></div>${forma}</div>`;
@@ -152,7 +153,7 @@ document.addEventListener("click",e=>{
     if(!c) return;
     if(!(v>0&&v<VALOR_MAX)) return mostrar("Coloque o valor pago.");
     const l=pagarConta(c,mes,v,caixa.querySelector("[data-pf]").value); contaAberta=null; render();
-    mostrar(`${c.nome} paga: ${brl(v)}.`,[()=>apagar(l.id)]);
+    mostrar(`${ddmm(l.data)} · ${c.nome} paga: ${brl(v)}.`,[()=>apagar(l.id)]);
   }
 });
 
@@ -202,9 +203,9 @@ function lancar(it){
     const x=new Date(a,m-1+i,1), mm=x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0");
     ids.push(adicionar({...base,valor:i===n-1?ultima:cada,data:noMes(mm,d),parcela:`${i+1}/${n}`,grupo}).id);
   }
-  return {linha:`${base.descricao||base.categoria}: ${brl(it.valor)} em ${n}x de ${brl(cada)}, ${base.categoria}`,desfazer:[()=>ids.forEach(apagar)]};
+  return {linha:`${ddmm(it.data)} · ${base.descricao||base.categoria}: ${brl(it.valor)} em ${n}x de ${brl(cada)}, ${base.categoria}`,desfazer:[()=>ids.forEach(apagar)]};
 }
-const linhaItem = i => `${i.tipo==="entrada"?"Entrada":"Saída"} ${brl(i.valor)}, ${i.categoria}${i.descricao?": "+i.descricao:""}${i.forma?", "+i.forma:""}`;
+const linhaItem = i => `${ddmm(i.data)} · ${i.tipo==="entrada"?"Entrada":"Saída"} ${brl(i.valor)}, ${i.categoria}${i.descricao?": "+i.descricao:""}${i.forma?", "+i.forma:""}`;
 
 function mostrar(txt,desfazer){
   const r=$("resp"); r.hidden=false; r.textContent=txt;
@@ -269,7 +270,7 @@ function comando(texto){
     if(!x){ const a=`Não achei conta em aberto com o nome ${r.pagar}. Fale com o valor: paguei 80 de ${r.pagar}.`; mostrar(a); return falar(a); }
     if(!x.c.valor){ const a=`${x.c.nome} não tem valor salvo. Fale: paguei 80 de ${x.c.nome}.`; mostrar(a); return falar(a); }
     const l=pagarConta(x.c,m,Number(x.c.valor),""); render();
-    const a=`${x.c.nome} paga: ${brl(Number(x.c.valor))}.`; mostrar(a,[()=>apagar(l.id)]); falar(a); $("cmd").value=""; return;
+    const a=`${ddmm(l.data)} · ${x.c.nome} paga: ${brl(Number(x.c.valor))}.`; mostrar(a,[()=>apagar(l.id)]); falar(a); $("cmd").value=""; return;
   }
   const itens=r.itens.filter(i=>i.valor>0&&i.valor<VALOR_MAX), linhas=[], desfazer=[];
   for(const it of itens){
